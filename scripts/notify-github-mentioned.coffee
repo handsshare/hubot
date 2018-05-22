@@ -92,7 +92,9 @@ module.exports = (robot) ->
         .filter(({event})-> event is 'mentioned')
         .filter(({created_at})-> lastFetched.isBefore created_at)
         .map (d)->
-          ":eye: @#{slackName(d.actor.login)} にメンション！「#{d.issue.title}」(#{d.issue.html_url}) at #{moment(d.created_at).format('M月D日(ddd)HH時mm分')}"
+          # Jiraのボットにチケット番号拾われてしまう問題
+          sanitizedTitle = d.issue.title.replace(/TSUK-(\d+)/, 'xTSUK-$1')
+          ":eye: @#{slackName(d.actor.login)} にメンション！「#{sanitizedTitle}」(#{d.issue.html_url}) at #{moment(d.created_at).format('M月D日(ddd)HH時mm分')}"
         .forEach (m)->
           robot.messageRoom process.env.DEVELOPER_ROOM_NAME, m
   , null, true
