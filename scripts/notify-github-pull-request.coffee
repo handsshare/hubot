@@ -30,7 +30,8 @@ translate = (word) ->
   translation[word] or word
 
 # プルリクを取得する
-checkPullRequests = (filtering = -> true )-> new Promise (resolve, reject) ->
+checkPullRequests = (filters)-> new Promise (resolve, reject) ->
+  {filtering, iterator} = Object.assign {iterator:((v) -> v), filtering:( -> true)}, filters
   pullRequests = null
 
   octokit.pullRequests.getAll
@@ -48,7 +49,9 @@ checkPullRequests = (filtering = -> true )-> new Promise (resolve, reject) ->
 
     Promise.all promises
   .then (result) ->
-    resolve pullRequests.filter(filtering)
+    resolve pullRequests
+      .filter(filtering)
+      .map(iterator)
       .map (pr, index)->
         reviewersState = result.find((reviewState)-> reviewState.number is pr.number).reviewersState
         prettyPRReviews(pr, reviewersState)
@@ -129,6 +132,13 @@ module.exports = (robot) ->
       console.error e
 
   new CronJob '0 0,30 10-18 * * 1-5', ->
-    checkPullRequests(({title})-> not title.startsWith('(wip)')).then (messages)->
+    filtering = ({title})-> not title.startsWith('(wip)')
+
+    iterator = (pr)->
+      # Jiraのボットにチケット番号拾われてしまう問題
+      sanitizedTitle = pr.title.replace(/TSUK-(\d+)/, 'xTSUK-$1')
+      Object.assign(pr, {title: sanitizedTitle})
+
+    checkPullRequests({iterator, filtering}).then (messages)->
       messages.forEach (message)-> robot.messageRoom process.env.DEVELOPER_ROOM_NAME, message
   , null, true
