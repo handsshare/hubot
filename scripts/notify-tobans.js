@@ -1,19 +1,15 @@
-/**
- * Description:
- *   当番お知らせ
- * Configuration:
- *   ROOM_NAME_FOR_TOBANS 通知先の部屋
- *   BRAIN_KEY_FOR_TOBANS 当番のデータ格納カラム名
- *   CRON_TIME_FOR_TOBANS 当番ののお知らせ時間
- * Dependencies:
- *   "cron": "^1.3.0"
- * Commands:
- *   hubot toban ls - 当番のリストを見る
- *   hubot toban add <name> <group_name> - 当番を追加する
- *   hubot toban rm  <name> <group_name> - 当番を削除する
- */
-
-
+// Description:
+//   当番お知らせ
+// Configuration:
+//   ROOM_NAME_FOR_TOBANS 通知先の部屋
+//   BRAIN_KEY_FOR_TOBANS 当番のデータ格納キー名
+//   CRON_TIME_FOR_TOBANS 当番のお知らせ時間
+// Dependencies:
+//   "cron": "^1.3.0"
+// Commands:
+//   hubot toban ls - 当番のリストを見る
+//   hubot toban add <name> <group_name> - 当番を追加する
+//   hubot toban rm  <name> <group_name> - 当番を削除する
 const {CronJob} = require('cron')
 
 const ROOM_NAME = process.env.ROOM_NAME_FOR_TOBANS
