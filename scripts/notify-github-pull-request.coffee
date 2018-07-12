@@ -100,7 +100,7 @@ prettyPRReviews = (pr, reviewersState)->
       approvedCount += 1
       # 承認済みの人にはメンションしない
       #prettied.push  "| #{userName} が#{translate state}したよ！"
-    if state is "CHANGES_REQUESTED"
+    if state in ["CHANGES_REQUESTED", "COMMENTED"]
       changesRequestedCount += 1
     #else
     #  prettied.push "| #{userName} が#{translate state}したよ！"
@@ -108,7 +108,7 @@ prettyPRReviews = (pr, reviewersState)->
   if (requestedReviewers.length is 0) and (approvedCount isnt 0) and (approvedCount is Object.keys(reviewersState).length)
     prettied.push "| @#{slackName(pr.user.login)} 全員承認したよ！マージしましょう！"
   if changesRequestedCount > 0
-    prettied.push "| @#{slackName(pr.user.login)} 変更リクエストがあるよ！確認しましょう！"
+    prettied.push "| @#{slackName(pr.user.login)} レビューコメントがあるよ！確認しましょう！"
 
   # マージ先警告
   # TODO: 別に切り出したい
