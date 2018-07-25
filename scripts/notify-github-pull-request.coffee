@@ -3,14 +3,14 @@
 #
 # Configuration:
 #   GITHUB_TOKEN
-#   REPO_OWNER
-#   REPO_NAME
+#   REPO_PATHS "owner_name/repo_name_1,owner_name/repo_name_2,other_owner_name/repo_name_3"
 #   DEVELOPER_ROOM_NAME
 #   CRON_TIME_FOR_GITHUB_PULL_REQUEST
 #
 # Dependencies:
 #   "@octokit/rest": "^14.0.9"
 #   "cron": "^1.3.0"
+#   "lodash": "^4.17.10"
 #
 # Commands:
 #   hubot prs - プルリクお知らせ
@@ -18,6 +18,7 @@
 CRON_TIME_FOR_GITHUB_PULL_REQUEST = process.env.CRON_TIME_FOR_GITHUB_PULL_REQUEST ||  '0 0,30 10-18 * * 1-5'
 octokit = require('@octokit/rest')()
 {CronJob} = require 'cron'
+_ = require 'lodash'
 
 octokit.authenticate
   type: 'token'
@@ -31,14 +32,29 @@ translate = (word) ->
     DISMISSED: "却下"
   translation[word] or word
 
+# ower_name/repo_name1,ower_name/repo_name2,...
+repoPaths = process.env.REPO_PATHS.split(',')
+  .map (path)->
+    path.split('/')
+  .map ([owner, repo]) ->
+    {owner, repo}
+
+checkPullRequestsAll = (filters) -> new Promise (resolve, reject)->
+  promises = repoPaths.map ({repo, owner})-> checkPullRequests({owner, repo, filters})
+  Promise.all(promises)
+    .then (results) ->
+      resolve _.flatten(results)
+    .catch (results) ->
+      resolve results
+
 # プルリクを取得する
-checkPullRequests = (filters)-> new Promise (resolve, reject) ->
+checkPullRequests = ({owner, repo, filters})-> new Promise (resolve, reject) ->
   {filtering, iterator} = Object.assign {iterator:((v) -> v), filtering:( -> true)}, filters
   pullRequests = null
 
   octokit.pullRequests.getAll
-    owner: process.env.REPO_OWNER
-    repo: process.env.REPO_NAME
+    owner: owner
+    repo: repo
     state: 'open'
     sort: "updated"
     direction: "desc"
@@ -47,7 +63,7 @@ checkPullRequests = (filters)-> new Promise (resolve, reject) ->
 
     # 各プルリクのレビューの詳細を取得
     promises = pullRequests.map (pr)->
-      fetchLastReviewStates pr.number, pr.user.login
+      fetchLastReviewStates owner, repo, pr.number, pr.user.login
 
     Promise.all promises
   .then (result) ->
@@ -63,10 +79,10 @@ checkPullRequests = (filters)-> new Promise (resolve, reject) ->
 
 # レビュー中レビュワーの最新状態を取得する
 # return: {"user1": "APPROVED", "user2": "COMMENTED"...}
-fetchLastReviewStates = (number, reviewee)-> new Promise (resolve, reject) ->
+fetchLastReviewStates = (owner, repo, number, reviewee)-> new Promise (resolve, reject) ->
   octokit.pullRequests.getReviews
-    owner: process.env.REPO_OWNER
-    repo: process.env.REPO_NAME
+    owner: owner
+    repo: repo
     number: number
   .then (result) ->
     reviewersState = result.data
@@ -156,14 +172,13 @@ module.exports = (robot) ->
 
   robot.respond /prs/i, (res) ->
     res.send 'プルリクチェックします...'
-    checkPullRequests().then (messages) ->
+    checkPullRequestsAll().then (messages) ->
       if messages.length isnt 0
         res.send messages.join("\n")
       else
         res.send "オープンなプルリクはありません"
     .catch (e) ->
       res.send "失敗しました"
-      console.error e
 
   new CronJob CRON_TIME_FOR_GITHUB_PULL_REQUEST, ->
     filtering = ({title})-> not title.startsWith('(wip)')
@@ -173,6 +188,6 @@ module.exports = (robot) ->
       sanitizedTitle = pr.title.replace(/TSUK-(\d+)/, 'xTSUK-$1')
       Object.assign(pr, {title: sanitizedTitle})
 
-    checkPullRequests({iterator, filtering}).then (messages)->
+    checkPullRequestsAll({iterator, filtering}).then (messages)->
       messages.forEach (message)-> robot.messageRoom process.env.DEVELOPER_ROOM_NAME, message
   , null, true
