@@ -50,5 +50,5 @@ module.exports = (robot) ->
         ]
         options = { as_user: true, link_names: 1, attachments: attachments }
         for i in handleNameList
-          sendDM(convertHandleName(i), '', options)
+          sendDM(convertHandleName(i), 'あなた宛のコメントがあります。確認しましょう！', options)
       res.send 'OK'
