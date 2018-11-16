@@ -5,14 +5,14 @@
 //   CRON_TIME_FOR_ARI_CON
 // Dependencies:
 //   "cron": "^1.3.0"
-const {CronJob} = require('cron')
+const {CronJob} = require('cron');
 
-const ROOM_NAME = process.env.ROOM_NAME_FOR_AIR_CON
-const CRON_TIME = process.env.CRON_TIME_FOR_AIR_CON || '* 0,30 10-18 * * 1-5'
+const ROOM_NAME = process.env.ROOM_NAME_FOR_AIR_CON;
+const CRON_TIME = process.env.CRON_TIME_FOR_AIR_CON;
 
 module.exports = (robot) => {
+  if (CRON_TIME == null) return;
 
-console.log(CRON_TIME);
   new CronJob(CRON_TIME, () => {
     const message = `
 エアコンの設定温度をリアクションしてください
