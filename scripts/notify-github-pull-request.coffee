@@ -181,7 +181,7 @@ module.exports = (robot) ->
       res.send "失敗しました"
 
   new CronJob CRON_TIME_FOR_GITHUB_PULL_REQUEST, ->
-    filtering = ({title})-> not title.startsWith('(wip)')
+    filtering = ({title})-> not title.toLowerCase().startsWith('(wip)') and not title.toLowerCase().startsWith('(ok)')
 
     iterator = (pr)->
       # Jiraのボットにチケット番号拾われてしまう問題
