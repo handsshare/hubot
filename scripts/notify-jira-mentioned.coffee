@@ -1,7 +1,6 @@
 # Use if the user name of jira and slack is different
 # "jiraName": "slackName"
-
-# map = "hhasegawa": "hhasegawa"
+BRAIN_KEYS_MEMBERS = 'members'
 
 module.exports = (robot) ->
   sendDM = (userName, message, options) ->
@@ -12,9 +11,12 @@ module.exports = (robot) ->
     return unless userId?
 
     client.web.chat.postMessage(userId, message, options)
-  convertHandleName = (name) ->
-    # map[name] || name # コンバートする必要があったらONに
-    name
+
+  convertHandleName = (atlassianName) ->
+    members = robot.brain.get(BRAIN_KEYS_MEMBERS) or []
+    member = members.find ({atlassian})-> atlassian is atlassianName
+    member?.name or atlassianName
+
   extractHandleName = (body) ->
     temp = body.match(/\[~.+?\]/g)
     unless temp is null

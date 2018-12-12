@@ -1,7 +1,7 @@
 # Use if the user name of jira and slack is different
 # "jiraName": "slackName"
 
-# map = "hhasegawa": "hhasegawa"
+BRAIN_KEYS_MEMBERS = 'members'
 
 module.exports = (robot) ->
   sendDM = (userName, message, body) ->
@@ -34,9 +34,12 @@ module.exports = (robot) ->
     ]
     options = { as_user: true, link_names: 1, attachments: attachments }
     client.web.chat.postMessage(userId, message, options)
-  convertHandleName = (name) ->
-    # map[name] || name # コンバートする必要があったらONに
-    name
+
+  convertHandleName = (atlassianName) ->
+    members = robot.brain.get(BRAIN_KEYS_MEMBERS) or []
+    member = members.find ({atlassian})-> atlassian is atlassianName
+    member?.name or atlassianName
+
   robot.router.post '/hubot/jira-assign-dm', (req, res) ->
     body = req.body
 
