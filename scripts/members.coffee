@@ -10,7 +10,7 @@
 #
 # Commands:
 #   hubot members ls - メンバーを表示
-#   hubot members add <slack_account> <github_account> <dept> - メンバーを追加
+#   hubot members add <slack_account> <github_account> <atlassian_account> <dept> - メンバーを追加
 #   hubot members rm/-rf - メンバーをすべて削除
 #   hubot members rm <name> - メンバーを削除
 #   hubot members gacha - メンバーガチャ
@@ -43,12 +43,13 @@ module.exports = (robot) ->
     members = robot.brain.get(BRAIN_KEYS_MEMBERS)
     res.send JSON.stringify members
 
-  robot.respond /members add (\S+)\s(\S+)\s(\S+)/i, (res) ->
+  robot.respond /members add (\S+)\s(\S+)\s(\S+)\s(\S+)/i, (res) ->
     name = res.match[1].trim()
     github = res.match[2].trim()
-    dept = res.match[3].trim()
+    atlassian = res.match[3].trim()
+    dept = res.match[4].trim()
     members = robot.brain.get(BRAIN_KEYS_MEMBERS) or []
-    members.push {name, github, dept}
+    members.push {name, github, atlassian, dept}
     robot.brain.set(BRAIN_KEYS_MEMBERS, members)
     res.send "added #{name}"
     res.send JSON.stringify members
