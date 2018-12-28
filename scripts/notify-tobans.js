@@ -85,29 +85,31 @@ module.exports = (robot) => {
   });
 
   // 当番を更新してお知らせ
-  new CronJob(CRON_TIME_FOR_TOBANS_NEXT, () => {
-    const tobans = robot.brain.get(REDIS_KEY) || {}
+  if (CRON_TIME_FOR_TOBANS_NEXT) {
+    new CronJob(CRON_TIME_FOR_TOBANS_NEXT, () => {
+      const tobans = robot.brain.get(REDIS_KEY) || {}
 
-    // 各当番のお知らせ
-    for (const groupName in tobans) {
-      const targetGroup = tobans[groupName];
+      // 各当番のお知らせ
+      for (const groupName in tobans) {
+        const targetGroup = tobans[groupName];
 
-      if (targetGroup.members.length < 1) continue;
+        if (targetGroup.members.length < 1) continue;
 
 
-      // 次の当番をbrainに保存するように破壊的にインクリメントする
-      targetGroup.index++;
+        // 次の当番をbrainに保存するように破壊的にインクリメントする
+        targetGroup.index++;
 
-      // 一周したら先頭から
-      if (!targetGroup.members[targetGroup.index]) {
-        targetGroup.index = 0;
+        // 一周したら先頭から
+        if (!targetGroup.members[targetGroup.index]) {
+          targetGroup.index = 0;
+        }
+
+        let message = `今日の${groupName}当番は: @${targetGroup.members[targetGroup.index]}`
+        robot.messageRoom(ROOM_NAME, message);
       }
-
-      let message = `今日の${groupName}当番は: @${targetGroup.members[targetGroup.index]}`
-      robot.messageRoom(ROOM_NAME, message);
-    }
-    robot.brain.set(REDIS_KEY, tobans);
-  }, null, true);
+      robot.brain.set(REDIS_KEY, tobans);
+    }, null, true);
+  }
 
 
   // 繰り上げずにお知らせだけする

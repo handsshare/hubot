@@ -15,7 +15,7 @@
 # Commands:
 #   hubot prs - プルリクお知らせ
 
-CRON_TIME_FOR_GITHUB_PULL_REQUEST = process.env.CRON_TIME_FOR_GITHUB_PULL_REQUEST ||  '0 0,30 10-18 * * 1-5'
+CRON_TIME_FOR_GITHUB_PULL_REQUEST = process.env.CRON_TIME_FOR_GITHUB_PULL_REQUEST
 octokit = require('@octokit/rest')()
 {CronJob} = require 'cron'
 _ = require 'lodash'
@@ -180,14 +180,15 @@ module.exports = (robot) ->
     .catch (e) ->
       res.send "失敗しました"
 
-  new CronJob CRON_TIME_FOR_GITHUB_PULL_REQUEST, ->
-    filtering = ({title})-> not title.toLowerCase().startsWith('(wip)') and not title.toLowerCase().startsWith('(ok)')
+  if CRON_TIME_FOR_GITHUB_PULL_REQUEST
+    new CronJob CRON_TIME_FOR_GITHUB_PULL_REQUEST, ->
+      filtering = ({title})-> not title.toLowerCase().startsWith('(wip)') and not title.toLowerCase().startsWith('(ok)')
 
-    iterator = (pr)->
-      # Jiraのボットにチケット番号拾われてしまう問題
-      sanitizedTitle = pr.title.replace(/TSUK-(\d+)/, 'xTSUK-$1')
-      Object.assign(pr, {title: sanitizedTitle})
+      iterator = (pr)->
+        # Jiraのボットにチケット番号拾われてしまう問題
+        sanitizedTitle = pr.title.replace(/TSUK-(\d+)/, 'xTSUK-$1')
+        Object.assign(pr, {title: sanitizedTitle})
 
-    checkPullRequestsAll({iterator, filtering}).then (messages)->
-      messages.forEach (message)-> robot.messageRoom process.env.DEVELOPER_ROOM_NAME, message
-  , null, true
+      checkPullRequestsAll({iterator, filtering}).then (messages)->
+        messages.forEach (message)-> robot.messageRoom process.env.DEVELOPER_ROOM_NAME, message
+    , null, true
