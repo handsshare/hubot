@@ -122,9 +122,9 @@ prettyPRReviews = (pr, reviewersState)->
     #  prettied.push "| #{userName} が#{translate state}したよ！"
 
   if (requestedReviewers.length is 0) and (approvedCount isnt 0) and (approvedCount is Object.keys(reviewersState).length)
-    prettied.push "| @#{slackName(pr.user.login)} 全員承認したよ！マージしましょう！"
+    prettied.push "| @#{slackName(getAssignee(pr))} 全員承認したよ！マージしましょう！"
   if changesRequestedCount > 0
-    prettied.push "| @#{slackName(pr.user.login)} レビューコメントがあるよ！確認しましょう！"
+    prettied.push "| @#{slackName(getAssignee(pr))} レビューコメントがあるよ！確認しましょう！"
 
   # マージ先警告
   # TODO: 別に切り出したい
@@ -132,6 +132,9 @@ prettyPRReviews = (pr, reviewersState)->
     prettied.push "@#{slackName(pr.user.login)} マージ先がおかしいっぽいので確認してください。 #{pr.head.ref} -> #{pr.base.ref}"
 
   prettied.filter((p) -> p? ).join('\n')
+
+# レビュイーを取得
+getAssignee = (pr) -> pr.assignee?.login or pr.user.login
 
 # マージ先が変な時に警告する
 #
