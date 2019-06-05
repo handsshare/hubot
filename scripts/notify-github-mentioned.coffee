@@ -66,6 +66,7 @@ module.exports = (robot) ->
     res.send "#{yesterday.format('M月D日(ddd)HH時mm分')}以降の#{name}あてメンションをチェックします...."
 
     fetchAllRepoEvents(per_page: 100).then (messages) ->
+      console.error messages
       mentioned = messages
         .filter(({event})-> event is 'mentioned')
         .filter(({created_at})-> yesterday.isBefore created_at)

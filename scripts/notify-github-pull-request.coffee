@@ -181,6 +181,7 @@ module.exports = (robot) ->
       else
         res.send "オープンなプルリクはありません"
     .catch (e) ->
+      console.error e
       res.send "失敗しました"
 
   if CRON_TIME_FOR_GITHUB_PULL_REQUEST
