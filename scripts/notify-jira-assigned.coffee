@@ -13,7 +13,7 @@ module.exports = (robot) ->
 
     issue = "#{body.issue.key} #{body.issue.fields.summary}"
     url = "#{process.env.HUBOT_JIRA_URL}/browse/#{body.issue.key}"
-    author = body.user.name
+    author = body.user.displayName
     attachments = [
       {
         fallback: "[<#{url}|#{issue}>] assigned by @#{author}",
