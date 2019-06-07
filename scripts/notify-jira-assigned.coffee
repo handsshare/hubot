@@ -53,9 +53,9 @@ module.exports = (robot) ->
     # info: https://ja.confluence.atlassian.com/cloud/api-tokens-938839638.html
     # ↑で発行したtokenと発行した際のユーザーメールアドレスが必要
     request.get {
-        url: body.issue.fields.assignee.self,
-        json: true,
-        auth: { user: process.env.HUBOT_JIRA_USER, pass: process.env.HUBOT_JIRA_TOKEN }
+      url: body.issue.fields.assignee.self,
+      json: true,
+      auth: { user: process.env.HUBOT_JIRA_USER, pass: process.env.HUBOT_JIRA_TOKEN }
       }, (error, responce, body) ->
       if error or responce.statusCode != 200
         console.log error
