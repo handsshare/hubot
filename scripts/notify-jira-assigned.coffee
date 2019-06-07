@@ -56,11 +56,11 @@ module.exports = (robot) ->
       url: body.issue.fields.assignee.self,
       json: true,
       auth: { user: process.env.HUBOT_JIRA_USER, pass: process.env.HUBOT_JIRA_TOKEN }
-      }, (error, responce, body) ->
+      }, (error, responce, another_body) ->
       if error or responce.statusCode != 200
         console.log error
         return res.send('ユーザーネームの取得に失敗しました')
-      sendDM(convertHandleName(body.name), 'イシューにアサインされました。確認しましょう！', body)
+      sendDM(convertHandleName(another_body.name), 'イシューにアサインされました。確認しましょう！', body)
 
     res.send 'OK'
 
