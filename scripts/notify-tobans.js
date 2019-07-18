@@ -1,7 +1,7 @@
 // Description:
 //   当番お知らせ
 // Configuration:
-//   ROOM_NAME_FOR_TOBANS 通知先の部屋
+//   ROOM_NAME_FOR_TOBANS 通知先の部屋(デフォルト値)
 //   BRAIN_KEY_FOR_TOBANS 当番のデータ格納キー名
 //   CRON_TIME_FOR_TOBANS_NEXT 当番の更新&お知らせ時間
 //   CRON_TIME_FOR_TOBANS_REPRISE 当番のお知らせ時間(再確認)
@@ -11,6 +11,7 @@
 //   hubot toban ls - 当番のリストを見る
 //   hubot toban add <name> <group_name> - 当番を追加する
 //   hubot toban rm  <name> <group_name> - 当番を削除する
+//   hubot toban set-channel <group_name> <channel_name> - 当番グループの通知チャンネルを変更する
 const {CronJob} = require('cron')
 
 const ROOM_NAME = process.env.ROOM_NAME_FOR_TOBANS
@@ -23,7 +24,8 @@ const CRON_TIME_FOR_TOBANS_REPRISE = process.env.CRON_TIME_FOR_TOBANS_REPRISE
  * {
  *   groupOne: {
  *     members: ['hoge', 'fuga', 'piyo'],
- *     index: 1, #-> now fuga!
+ *     index: 1, #-> now fuga!,
+ *     channel: 'to-dev'
  *   },
  *   ...
  * }
@@ -40,7 +42,7 @@ module.exports = (robot) => {
       const prettied = target.members
         .map((name, index) => target.index === index ? `*${name}*` : name)
         .join(' -> ');
-      res.send(`${groupName}: ${prettied}`);
+      res.send(`${groupName}(channel => #${target.channel}): ${prettied}`);
     }
   });
 
@@ -55,7 +57,8 @@ module.exports = (robot) => {
     if (!tobans[group]) {
       tobans[group] = {
         members: [],
-        index: 0
+        index: 0,
+        channel: ROOM_NAME
       };
     }
 
@@ -82,6 +85,24 @@ module.exports = (robot) => {
 
     robot.brain.set(REDIS_KEY, tobans)
     res.send(`removed ${name} from ${group}`);
+  });
+
+  // 当番通知チャンネルを変更
+  robot.respond(/toban set-channel (\S+)\s(\S+)/, (res) => {
+    const group = res.match[1].trim()
+    const channel_name = res.match[2].trim()
+
+    const tobans = robot.brain.get(REDIS_KEY) || {}
+    const target = tobans[group]
+
+    if (!target) {
+      res.send(`Not found ${group}`);
+      return
+    }
+
+    tobans[group].channel = channel_name
+    robot.brain.set(REDIS_KEY, tobans)
+    res.send(`set-channel ${channel_name} to ${group}`);
   });
 
   // 当番を更新してお知らせ
