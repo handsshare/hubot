@@ -1,7 +1,7 @@
 // Description:
 //   当番お知らせ
 // Configuration:
-//   ROOM_NAME_FOR_TOBANS 通知先の部屋
+//   ROOM_NAME_FOR_TOBANS 通知先の部屋(複数の場合、カンマ区切り)
 //   BRAIN_KEY_FOR_TOBANS 当番のデータ格納キー名
 //   CRON_TIME_FOR_TOBANS_NEXT 当番の更新&お知らせ時間
 //   CRON_TIME_FOR_TOBANS_REPRISE 当番のお知らせ時間(再確認)
@@ -13,7 +13,7 @@
 //   hubot toban rm  <name> <group_name> - 当番を削除する
 const {CronJob} = require('cron')
 
-const ROOM_NAME = process.env.ROOM_NAME_FOR_TOBANS
+const ROOM_NAMES = process.env.ROOM_NAME_FOR_TOBANS.split(',')
 const REDIS_KEY = process.env.BRAIN_KEY_FOR_TOBANS
 const CRON_TIME_FOR_TOBANS_NEXT = process.env.CRON_TIME_FOR_TOBANS_NEXT
 const CRON_TIME_FOR_TOBANS_REPRISE = process.env.CRON_TIME_FOR_TOBANS_REPRISE
@@ -105,7 +105,9 @@ module.exports = (robot) => {
         }
 
         let message = `今日の${groupName}当番は: @${targetGroup.members[targetGroup.index]}`
-        robot.messageRoom(ROOM_NAME, message);
+        for (const room_name in ROOM_NAMES) {
+          robot.messageRoom(room_name, message);
+        }
       }
       robot.brain.set(REDIS_KEY, tobans);
     }, null, true);
@@ -119,8 +121,11 @@ module.exports = (robot) => {
       for (const groupName in tobans) {
         const targetGroup = tobans[groupName];
         if (targetGroup.members.length < 1) continue;
+
         let message = `今日の${groupName}当番は @${targetGroup.members[targetGroup.index]} でした. お疲れ様でした. `
-        robot.messageRoom(ROOM_NAME, message);
+        for (const room_name in ROOM_NAMES) {
+          robot.messageRoom(room_name, message);
+        }
       }
     }, null, true);
   }
