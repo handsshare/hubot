@@ -2,7 +2,6 @@
 #   朝会お知らせ
 #
 # Configuration:
-#   ASAKAI_ROOM_NAME
 #
 # Dependencies:
 #   "cron": "^1.3.0"
