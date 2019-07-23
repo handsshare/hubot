@@ -126,7 +126,7 @@ module.exports = (robot) => {
         }
 
         let message = `今日の${groupName}当番は: @${targetGroup.members[targetGroup.index]}`
-        robot.messageRoom(ROOM_NAME, message);
+        robot.messageRoom(targetGroup.channel, message);
       }
       robot.brain.set(REDIS_KEY, tobans);
     }, null, true);
@@ -141,7 +141,7 @@ module.exports = (robot) => {
         const targetGroup = tobans[groupName];
         if (targetGroup.members.length < 1) continue;
         let message = `今日の${groupName}当番は @${targetGroup.members[targetGroup.index]} でした. お疲れ様でした. `
-        robot.messageRoom(ROOM_NAME, message);
+        robot.messageRoom(targetGroup.channel, message);
       }
     }, null, true);
   }
