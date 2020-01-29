@@ -142,7 +142,8 @@ getAssignee = (pr) -> pr.assignee?.login or pr.user.login
 shouldAlertMargeBase = (baseName, headName) ->
   whiteList = [
     {base: 'master', head: ['feature/', 'hotfix/', 'fix/', 'parent/']},
-    {base: 'parent/', head: ['child/']},
+    {base: 'parent/', head: ['child/', 'feature/']},
+    {base: 'feature/', head: ['child/']},
     {base: 'release', head: ['hotfix/', 'master']},
   ]
   ok = whiteList.filter (white) ->
