@@ -4,6 +4,10 @@
   "private": true,
   "author": "akinov",
   "description": "super neko",
+  "scripts": {
+    "start": "export $(cat .env | grep -v ^# | xargs); bin/hubot",
+    "slack": "export $(cat .env | grep -v ^# | xargs); bin/hubot --adapter slack"
+  },
   "dependencies": {
     "@octokit/rest": "^14.0.9",
     "axios": "^0.18.0",
