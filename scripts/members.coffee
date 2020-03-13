@@ -1,5 +1,5 @@
 # Description:
-#   朝会お知らせ
+#   SlackとGitHubとAtlassianとかのアカウント名を紐づける
 #
 # Configuration:
 #
@@ -44,12 +44,16 @@ module.exports = (robot) ->
 
   robot.respond /members add (\S+)\s(\S+)\s(\S+)\s(\S+)/i, (res) ->
     name = res.match[1].trim()
+    # alias
+    slack = name
     github = res.match[2].trim()
     atlassian = res.match[3].trim()
     dept = res.match[4].trim()
+
     members = robot.brain.get(BRAIN_KEYS_MEMBERS) or []
-    members.push {name, github, atlassian, dept}
+    members.push {name, slack, github, atlassian, dept}
     robot.brain.set(BRAIN_KEYS_MEMBERS, members)
+
     res.send "added #{name}"
     res.send JSON.stringify members
 
