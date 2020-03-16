@@ -10,6 +10,7 @@
 # Commands:
 #   hubot members ls - メンバーを表示
 #   hubot members add <slack_account> <github_account> <atlassian_account> <dept> - メンバーを追加
+#   hubot members bulk-create {JSON<Array>} - メンバーを一気に追加
 #   hubot members rm/-rf - メンバーをすべて削除
 #   hubot members rm <name> - メンバーを削除
 #   hubot members gacha - メンバーガチャ
@@ -56,6 +57,14 @@ module.exports = (robot) ->
 
     res.send "added #{name}"
     res.send JSON.stringify members
+
+  robot.respond /members bulk-create (.+)/, (res) ->
+    rawJSON = res.match[1]
+    json = JSON.parse(rawJSON)
+    members = robot.brain.get(BRAIN_KEYS_MEMBERS) or []
+    members = members.concat(json)
+    robot.brain.set(BRAIN_KEYS_MEMBERS, members)
+    res.send "bulk-create done."
 
   robot.respond /members rm\/-rf/i, (res) ->
     robot.brain.set(BRAIN_KEYS_MEMBERS, [])
